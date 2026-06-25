@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#BFB0A8" />
+
+  <!-- ===== SEO / Social ===== -->
+  <title>Noupada Sankar — Full Stack Engineer</title>
+  <meta name="description" content="Noupada Sankar — Full Stack Engineer crafting scalable, AI-powered web platforms with React, Node.js, MongoDB and AWS." />
+  <meta name="author" content="Noupada Sankar" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Noupada Sankar — Full Stack Engineer" />
+  <meta property="og:description" content="Crafting scalable, AI-powered web platforms with React, Node.js, MongoDB and AWS." />
+  <meta property="og:image" content="assets/img/profile.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- ===== Performance: preconnect to font hosts ===== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+
+  <!-- ===== Variable fonts: Space Grotesk (display) + Inter (body) ===== -->
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="icon" href="public/favicon.ico" sizes="any" />
+
+  <!-- ===== Lucide Icons (used by Vercel, Linear, Notion) ===== -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- ===== Import map: lets modules use bare "three" + addons (realistic
+       materials, environment, loaders) without a build step ===== -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- ===== Scroll-driven hero video (overrides + cinematic frame) ===== -->
+  <style>
+    /* The hero becomes a tall scroll track; an inner stage is pinned. */
+    .hero{
+      height:400vh;            /* scroll distance to scrub the whole clip   */
+      min-height:0;
+      display:block;
+      padding:0;
+      overflow:visible;
+      background: var(--bg);       /* website background — dark                  */
+    }
+    /* Pinned viewport-high stage: left text · video · right text. */
+    .hero__stage{
+      position:sticky;         /* stays on screen while you scroll through   */
+      top:0;
+      height:100vh;
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      gap:clamp(1rem, 4vw, 4rem);
+      padding:0 clamp(1.25rem, 5vw, 5rem);
+      z-index:2;
+    }
+    .hero__col{ display:grid; gap:var(--sp-3); align-content:center; position:relative; z-index:4; }
+    .hero__col--right{
+      position:absolute;
+      bottom: clamp(2.5rem, 6vh, 5rem);
+      right: clamp(1.5rem, 5vw, 5rem);
+      max-width: clamp(220px, 28vw, 360px);
+      justify-items:start;
+      text-align:left;
+      z-index:5;
+    }
+    .hero__col--right .hero__social{ justify-content:flex-start; }
+    /* Keep overlaid text legible over the greige footage. */
+    .hero__col :is(.hero__title,.hero__role,.hero__lead,.hero__eyebrow){
+      text-shadow:0 2px 18px rgba(0,0,0,.55);
+    }
+
+    /* Full-screen video frame — clean, no bars, no dummy colors. */
+    .hero__videoframe{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      overflow:hidden;
+      background:transparent;
+      isolation:isolate;
+      z-index:0;
+    }
+    .hero__video{
+      width:100%; height:100%;
+      object-fit:cover;
+      /* Shifted right so Gemini watermark stays cropped out of frame          */
+      object-position:69% 68%;
+      display:block;
+      background:transparent;
+      transform:scale(1.10);
+      transform-origin:69% 45%;   /* scale expands downward — no top gap      */
+    }
+    /* Side gradient scrim — left/right text stays readable, no hard edges. */
+    .hero__side-scrim{
+      position:absolute; inset:0;
+      background:
+        linear-gradient(90deg,
+          rgba(10,10,11,.80) 0%,
+          rgba(10,10,11,.05) 28%,
+          rgba(10,10,11,.05) 62%,
+          rgba(10,10,11,.75) 100%);
+      z-index:3; pointer-events:none;
+    }
+
+    /* Top and bottom vignette fades removed as requested */
+
+    /* Stack the columns on small screens — text stays visible above/below. */
+    @media (max-width:780px){
+      .hero{ height:300vh; }
+      .hero__stage{
+        grid-template-columns:1fr;
+        justify-items:center;
+        gap:clamp(.75rem, 4vw, 2rem);
+        padding-block:6vh;
+        align-content:center;
+      }
+      .hero__col--right{ position:static; max-width:100%; justify-items:center; text-align:center; align-content:center; bottom:auto; right:auto; }
+      .hero__col--right .hero__social{ justify-content:center; }
+      .hero__videoframe{ width:100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ============================================================
+       PRELOADER  (logo reveal + counter, removed after load)
+  ============================================================= -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__inner">
+      <span class="preloader__logo">NS</span>
+      <div class="preloader__bar"><span class="preloader__fill" id="preloaderFill"></span></div>
+      <span class="preloader__count" id="preloaderCount">0</span>
+    </div>
+  </div>
+
+  <!-- ===== Accessibility: skip link ===== -->
+  <a href="#hero" class="skip-link">Skip to content</a>
+
+  <!-- ===== Decorative background layers (aurora + mesh + noise) ===== -->
+  <div class="bg-layers" aria-hidden="true">
+    <div class="aurora aurora--1"></div>
+    <div class="aurora aurora--2"></div>
+    <div class="aurora aurora--3"></div>
+    <div class="grid-overlay"></div>
+    <div class="noise"></div>
+  </div>
+
+
+
+
+  <!-- ===== Scroll progress bar ===== -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       NAVIGATION
+  ============================================================= -->
+  <header class="nav" id="nav">
+    <nav class="nav__inner" aria-label="Primary">
+      <a href="#hero" class="nav__logo" data-magnetic aria-label="Home — Noupada Sankar">
+        <span class="nav__logo-mark">NS</span>
+        <span class="nav__logo-text">Noupada Sankar</span>
+      </a>
+
+      <ul class="nav__list" id="navList">
+        <li><a href="#about"    class="nav__link" data-nav>About</a></li>
+        <li><a href="#skills"   class="nav__link" data-nav>Skills</a></li>
+        <li><a href="#work"     class="nav__link" data-nav>Work</a></li>
+        <li><a href="#contact"  class="nav__link" data-nav>Contact</a></li>
+      </ul>
+
+      <div class="nav__actions">
+        <a href="#contact" class="btn btn--sm btn--primary nav__cta" data-magnetic>Let's talk</a>
+
+        <button class="nav__burger" id="navBurger" type="button"
+                aria-label="Open menu" aria-expanded="false" aria-controls="navList">
+          <span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- ============================================================
+         HERO
+    ============================================================= -->
+    <section class="hero" id="hero">
+      <!-- Pinned stage: left text · scroll-driven video · right text -->
+      <div class="hero__stage">
+
+        <!-- LEFT TEXT -->
+        <div class="hero__col hero__col--left">
+          <!-- CHAPTER 1: INTRO (0 - 25%) -->
+          <div class="hero__chapter is-active" data-chapter="0">
+            <p class="hero__eyebrow">
+              <span class="status-dot"></span> Available for opportunities · 2026
+            </p>
+
+            <h2 class="hero__title" aria-label="Noupada Sankar">
+              <span class="hero__line" data-split aria-hidden="true">Noupada Sankar</span>
+            </h2>
+
+            <div class="hero__role" aria-live="polite">
+              <span class="hero__role-rotate" id="roleRotate"
+                    data-roles="Creative Developer, AI Engineer, Automation Builder"></span>
+              <span class="hero__caret" aria-hidden="true"></span>
+            </div>
+
+            <p class="hero__lead">
+              I design and engineer scalable, AI-powered web platforms with
+              <strong>React</strong>, <strong>Node.js</strong>,
+              <strong>MongoDB</strong> and <strong>AWS</strong>.
+            </p>
+
+            <div class="hero__cta">
+              <a href="#work" class="btn btn--primary" data-magnetic>
+                View my work
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
+              </a>
+              <a href="SANKAR_RESUME.pdf" download class="btn btn--ghost" data-link="resume" data-magnetic>
+                Download CV
+              </a>
+            </div>
+          </div>
+
+          <!-- CHAPTER 2: TECH STACK (25 - 50%) -->
+          <div class="hero__chapter" data-chapter="1">
+            <p class="hero__eyebrow">
+              <span class="hero__eyebrow-accent">✦</span> Tech Stack
+            </p>
+            <h2 class="hero__title">My Tech Stack</h2>
+            <div class="tech-pills">
+              <span class="tech-pill">React</span>
+              <span class="tech-pill">Node.js</span>
+              <span class="tech-pill">MongoDB</span>
+              <span class="tech-pill">AWS</span>
+              <span class="tech-pill">Docker</span>
+              <span class="tech-pill">Python</span>
+              <span class="tech-pill">Playwright</span>
+              <span class="tech-pill">Redis</span>
+              <span class="tech-pill">Tailwind</span>
+            </div>
+            <p class="tech-subtext">8+ production tools</p>
+          </div>
+
+          <!-- CHAPTER 3: REAL IMPACT (50 - 75%) -->
+          <div class="hero__chapter" data-chapter="2">
+            <p class="hero__eyebrow">
+              <span class="hero__eyebrow-accent">✦</span> Real Impact
+            </p>
+            <h2 class="hero__title">Real Impact</h2>
+            <div class="stat-counters">
+              <div class="stat-counter">
+                <div class="stat-counter__wrapper">
+                  <span class="stat-counter__number" data-target="3" data-suffix="+">0</span>
+                  <span class="stat-counter__suffix">+</span>
+                </div>
+                <span class="stat-counter__label">AI Platforms</span>
+              </div>
+              <div class="stat-counter">
+                <div class="stat-counter__wrapper">
+                  <span class="stat-counter__number" data-target="10" data-suffix="k+">0</span>
+                  <span class="stat-counter__suffix">k+</span>
+                </div>
+                <span class="stat-counter__label">Users Reached</span>
+              </div>
+              <div class="stat-counter">
+                <div class="stat-counter__wrapper">
+                  <span class="stat-counter__number" data-target="99" data-suffix="%">0</span>
+                  <span class="stat-counter__suffix">%</span>
+                </div>
+                <span class="stat-counter__label">Uptime</span>
+              </div>
+            </div>
+            <p class="impact-blurb">From side projects to production systems used by real users.</p>
+          </div>
+
+          <!-- CHAPTER 4: LET'S COLLABORATE (75 - 100%) -->
+          <div class="hero__chapter" data-chapter="3">
+            <p class="hero__eyebrow">
+              <span class="hero__eyebrow-accent">✦</span> Let's Collaborate
+            </p>
+            <h2 class="hero__title">Let's Collaborate</h2>
+            <p class="hero__lead">Have a project or idea? I build fast, ship clean, and iterate with purpose.</p>
+            <div class="hero__cta">
+              <a href="#work" class="btn btn--primary" data-magnetic>
+                View Work
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
+              </a>
+              <a href="#contact" class="btn btn--ghost" data-magnetic>
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER VIDEO (scroll-scrubbed) -->
+        <div class="hero__videoframe">
+          <video class="hero__video" id="heroVideo"
+                 muted playsinline preload="auto"
+                 poster="" aria-label="Animation of a head transforming into AI">
+            <source src="assets/hero-video.mp4" type="video/mp4" />
+          </video>
+          <div class="hero__side-scrim" aria-hidden="true"></div>
+        </div>
+
+        <!-- RIGHT TEXT -->
+        <div class="hero__col hero__col--right">
+          <!-- CHAPTER 1: INTRO (0 - 25%) -->
+          <div class="hero__chapter is-active" data-chapter="0">
+            <p class="hero__eyebrow">Scroll to play ↓</p>
+            <p class="hero__lead">
+              From resume-intelligence and role-based access systems to
+              polished, production-grade interfaces — built end-to-end.
+            </p>
+            <ul class="hero__social" aria-label="Social profiles">
+              <li><a href="https://github.com/noupadasankar" target="_blank" rel="noopener" aria-label="GitHub" data-link="github" data-magnetic>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.22.66-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.4 9.4 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.16.57.67.48A10 10 0 0 0 12 2Z"/></svg>
+              </a></li>
+              <li><a href="https://www.linkedin.com/in/shankar-noupada-7a5b77301" target="_blank" rel="noopener" aria-label="LinkedIn" data-link="linkedin" data-magnetic>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.94 5a1.94 1.94 0 1 1-3.88 0 1.94 1.94 0 0 1 3.88 0ZM3.3 8.4h3.3V21H3.3V8.4Zm5.46 0h3.16v1.72h.05c.44-.83 1.5-1.72 3.1-1.72 3.32 0 3.93 2.18 3.93 5v6.6h-3.3v-5.85c0-1.4-.02-3.2-1.95-3.2-1.96 0-2.26 1.53-2.26 3.1V21h-3.3V8.4Z"/></svg>
+              </a></li>
+              <li><a href="https://codepen.io" target="_blank" rel="noopener" aria-label="CodePen" data-link="codepen" data-magnetic>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 22c-.1 0-.2 0-.3-.1l-9-6c-.3-.2-.4-.5-.4-.9v-6c0-.3.1-.7.4-.9l9-6c.2-.1.5-.1.8 0l9 6c.3.2.4.5.4.9v6c0 .3-.1.7-.4.9l-9 6c-.1.1-.2.1-.3.1zm-8-7.6l7 4.7V14.3l-4.7-3.1L4 12.7v1.7zm8-6.1l4.7 3.1 2.3-1.5-7-4.7v3.1zm1 10.8l7-4.7v-1.7l-2.3-1.5-4.7 3.1v4.8zm0-13.9v3.1l4.7 3.1 2.3-1.5-7-4.7zm-2 4.7L6.3 11 4 9.5l7-4.7v4.7zm-7 3l4.7 3.1 2.3-1.5-7-4.7v3.1zM12 13.2l3.3-2.2-3.3-2.2-3.3 2.2 3.3 2.2z"/></svg>
+              </a></li>
+            </ul>
+          </div>
+
+          <!-- CHAPTER 2: WHAT I BUILD (25 - 50%) -->
+          <div class="hero__chapter" data-chapter="1">
+            <h3 class="hero__col-title">What I Build</h3>
+            <div class="build-cards">
+              <div class="build-card" style="--card-idx: 0">
+                <span class="build-card__icon build-card__icon--ai" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                </span>
+                <div class="build-card__content">
+                  <h4 class="build-card__name">AI Platforms</h4>
+                  <p class="build-card__text">Autonomous agents &amp; LLM-powered apps</p>
+                </div>
+              </div>
+              <div class="build-card" style="--card-idx: 1">
+                <span class="build-card__icon build-card__icon--api" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </span>
+                <div class="build-card__content">
+                  <h4 class="build-card__name">REST APIs</h4>
+                  <p class="build-card__text">Scalable backend systems &amp; microservices</p>
+                </div>
+              </div>
+              <div class="build-card" style="--card-idx: 2">
+                <span class="build-card__icon build-card__icon--cloud" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                </span>
+                <div class="build-card__content">
+                  <h4 class="build-card__name">Cloud Infra</h4>
+                  <p class="build-card__text">AWS deployments with 99% uptime</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHAPTER 3: HOW I WORK (50 - 75%) -->
+          <div class="hero__chapter" data-chapter="2">
+            <h3 class="hero__col-title">How I Work</h3>
+            <div class="work-process">
+              <div class="process-line"></div>
+              <div class="process-step" style="--step-idx: 0">
+                <div class="process-step__badge">1</div>
+                <div class="process-step__info">
+                  <h4 class="process-step__name">Design</h4>
+                  <p class="process-step__text">Research &amp; wireframe</p>
+                </div>
+              </div>
+              <div class="process-step" style="--step-idx: 1">
+                <div class="process-step__badge">2</div>
+                <div class="process-step__info">
+                  <h4 class="process-step__name">Architect</h4>
+                  <p class="process-step__text">Plan the system</p>
+                </div>
+              </div>
+              <div class="process-step" style="--step-idx: 2">
+                <div class="process-step__badge">3</div>
+                <div class="process-step__info">
+                  <h4 class="process-step__name">Build</h4>
+                  <p class="process-step__text">Ship clean code</p>
+                </div>
+              </div>
+              <div class="process-step" style="--step-idx: 3">
+                <div class="process-step__badge">4</div>
+                <div class="process-step__info">
+                  <h4 class="process-step__name">Deploy</h4>
+                  <p class="process-step__text">Scale to production</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHAPTER 4: AVAILABLE NOW (75 - 100%) -->
+          <div class="hero__chapter" data-chapter="3">
+            <h3 class="hero__col-title">Available Now</h3>
+            <div class="availability-card">
+              <div class="availability-status">
+                <span class="status-dot pulsing"></span>
+                <span>Open to Work — 2026</span>
+              </div>
+              <ul class="availability-details">
+                <li>
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <span class="detail-label">Location:</span> <strong>India</strong>
+                </li>
+                <li>
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </span>
+                  <span class="detail-label">Timezone:</span> <strong>IST UTC+5:30</strong>
+                </li>
+                <li>
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  </span>
+                  <span class="detail-label">Response:</span> <strong>Within 24hrs</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ABOUT  (intro + animated stats + timeline)
+    ============================================================= -->
+    <section class="section about" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <span class="section__index">01</span>
+          <h2 class="section__title" id="about-title">About</h2>
+        </header>
+
+        <div class="bento about__grid">
+          <!-- profile photo -->
+          <figure class="about__media card--tilt" data-tilt data-reveal>
+            <img src="assets/img/profile.png" alt="Portrait of Noupada Sankar" width="640" height="800" loading="lazy" decoding="async" />
+          </figure>
+
+          <!-- intro card -->
+          <article class="card card--glass about__intro" data-reveal>
+            <p class="about__lead">
+              I'm a <strong>Full Stack Engineer</strong> currently building
+              AI-driven recruitment &amp; placement platforms at
+              <strong>DhiAspire&nbsp;AI</strong>.
+            </p>
+            <p class="about__text">
+              I care deeply about the craft — clean architecture on the backend,
+              pixel-honest interfaces on the front, and systems that stay reliable
+              under real production load. I enjoy turning fuzzy problems into
+              calm, scalable products that people actually like to use.
+            </p>
+            <a href="#contact" class="link-arrow" data-magnetic>
+              Get in touch
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
+            </a>
+          </article>
+
+          <!-- stat cards (count-up) -->
+          <article class="card card--glass stat" data-reveal>
+            <span class="stat__num" data-count="15" data-suffix="+">0</span>
+            <span class="stat__label">Technologies shipped</span>
+          </article>
+          <article class="card card--glass stat" data-reveal>
+            <span class="stat__num" data-count="100" data-suffix="%">0</span>
+            <span class="stat__label">Ownership, end-to-end</span>
+          </article>
+          <article class="card card--glass stat" data-reveal>
+            <span class="stat__num" data-count="5" data-suffix="+">0</span>
+            <span class="stat__label">Production projects</span>
+          </article>
+
+          <!-- timeline card spanning full width -->
+          <article class="card card--glass about__timeline" data-reveal aria-label="Experience and education timeline">
+            <h3 class="card__kicker">Experience &amp; Education</h3>
+            <ol class="timeline">
+              <li class="timeline__item" data-reveal>
+                <div class="timeline__dot"></div>
+                <div class="timeline__body">
+                  <span class="timeline__period">Oct 2025 — Present</span>
+                  <h4 class="timeline__role">Full Stack Developer Intern</h4>
+                  <p class="timeline__org">DhiAspire AI</p>
+                  <p class="timeline__desc">
+                    Built an AI placement-training platform: resume analysis,
+                    JD-based candidate scoring, RBAC across colleges/departments/
+                    students, and multi-tenant infrastructure — working the full
+                    stack from UI to cloud.
+                  </p>
+                </div>
+              </li>
+              <li class="timeline__item" data-reveal>
+                <div class="timeline__dot"></div>
+                <div class="timeline__body">
+                  <span class="timeline__period">2021 — 2025</span>
+                  <h4 class="timeline__role">B.Tech, Computer Science</h4>
+                  <p class="timeline__org">University</p>
+                  <p class="timeline__desc">
+                    Foundations in data structures, databases, distributed
+                    systems and cloud — paired with hands-on full-stack building.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SKILLS  (cards + progress rings + marquee)
+    ============================================================= -->
+    <section class="section skills" id="skills" aria-labelledby="skills-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <span class="section__index">02</span>
+          <h2 class="section__title" id="skills-title">Skills</h2>
+        </header>
+
+        <div class="bento skills__grid">
+          <article class="card card--glass card--tilt skill-card" data-tilt data-reveal>
+            <h3 class="skill-card__title">Frontend</h3>
+            <p class="skill-card__list">React.js · JavaScript (ES6+) · HTML5 · CSS3 · Tailwind · Bootstrap · Material UI</p>
+          </article>
+          <article class="card card--glass card--tilt skill-card" data-tilt data-reveal>
+            <h3 class="skill-card__title">Backend</h3>
+            <p class="skill-card__list">Node.js · Express.js · REST APIs · Firebase · Auth &amp; RBAC</p>
+          </article>
+          <article class="card card--glass card--tilt skill-card" data-tilt data-reveal>
+            <h3 class="skill-card__title">Data &amp; Cloud</h3>
+            <p class="skill-card__list">MongoDB · MySQL · SQL · AWS · Git &amp; GitHub</p>
+          </article>
+
+          <!-- circular progress rings -->
+          <article class="card card--glass skills__rings" data-reveal aria-label="Proficiency levels">
+            <div class="ring" data-ring="90" role="img" aria-label="Frontend proficiency 90 percent">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring__track" cx="60" cy="60" r="52"></circle>
+                <circle class="ring__fill" cx="60" cy="60" r="52"></circle>
+              </svg>
+              <span class="ring__pct" data-count="90" data-suffix="%">0</span>
+              <span class="ring__label">Frontend</span>
+            </div>
+            <div class="ring" data-ring="82" role="img" aria-label="Backend proficiency 82 percent">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring__track" cx="60" cy="60" r="52"></circle>
+                <circle class="ring__fill" cx="60" cy="60" r="52"></circle>
+              </svg>
+              <span class="ring__pct" data-count="82" data-suffix="%">0</span>
+              <span class="ring__label">Backend</span>
+            </div>
+            <div class="ring" data-ring="78" role="img" aria-label="Cloud and databases proficiency 78 percent">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring__track" cx="60" cy="60" r="52"></circle>
+                <circle class="ring__fill" cx="60" cy="60" r="52"></circle>
+              </svg>
+              <span class="ring__pct" data-count="78" data-suffix="%">0</span>
+              <span class="ring__label">Cloud / DB</span>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- infinite marquee -->
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>HTML</span><span>CSS</span><span>JavaScript</span><span>React</span>
+          <span>Node.js</span><span>Express</span><span>TypeScript</span><span>Tailwind</span>
+          <span>MongoDB</span><span>MySQL</span><span>Firebase</span><span>AWS</span>
+          <span>Git</span><span>Java</span>
+          <!-- duplicate for seamless loop -->
+          <span>HTML</span><span>CSS</span><span>JavaScript</span><span>React</span>
+          <span>Node.js</span><span>Express</span><span>TypeScript</span><span>Tailwind</span>
+          <span>MongoDB</span><span>MySQL</span><span>Firebase</span><span>AWS</span>
+          <span>Git</span><span>Java</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         WORK / PROJECTS
+    ============================================================= -->
+    <section class="section work" id="work" aria-labelledby="work-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <span class="section__index">03</span>
+          <h2 class="section__title" id="work-title">Selected Work</h2>
+        </header>
+
+        <!-- filter -->
+        <div class="filter" role="tablist" aria-label="Filter projects" data-reveal>
+          <button class="filter__btn is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button class="filter__btn" data-filter="fullstack" role="tab" aria-selected="false">Full Stack</button>
+          <button class="filter__btn" data-filter="frontend" role="tab" aria-selected="false">Frontend</button>
+        </div>
+
+        <!-- Project cards are injected here from assets/js/config.js -->
+        <div class="work__grid" id="workGrid"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CONTACT
+    ============================================================= -->
+    <section class="section contact" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <span class="section__index">04</span>
+          <h2 class="section__title" id="contact-title">Let's build something</h2>
+        </header>
+
+        <div class="bento contact__grid">
+          <form class="card card--glass contact__form" id="contactForm" novalidate data-reveal
+                action="https://formsubmit.co/noupadashankar78@gmail.com" method="POST">
+            <div class="field">
+              <input class="field__input" type="text" id="name" name="name" placeholder=" " required autocomplete="name" />
+              <label class="field__label" for="name">Your name</label>
+              <span class="field__error" data-error-for="name"></span>
+            </div>
+            <div class="field">
+              <input class="field__input" type="email" id="email" name="email" placeholder=" " required autocomplete="email" />
+              <label class="field__label" for="email">Email address</label>
+              <span class="field__error" data-error-for="email"></span>
+            </div>
+            <div class="field">
+              <textarea class="field__input field__input--area" id="message" name="message" placeholder=" " rows="5" required></textarea>
+              <label class="field__label" for="message">Tell me about your project</label>
+              <span class="field__error" data-error-for="message"></span>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit" id="submitBtn" data-magnetic>
+              <span class="btn__label">Send message</span>
+              <span class="btn__spinner" aria-hidden="true"></span>
+            </button>
+            <p class="contact__status" id="contactStatus" role="status" aria-live="polite"></p>
+          </form>
+
+          <aside class="contact__aside">
+            <article class="card card--glass contact__cta" data-reveal>
+              <h3 class="card__kicker">Prefer email?</h3>
+              <a href="mailto:noupadashankar78@gmail.com" class="contact__mail" data-link="email" data-link-text data-magnetic>noupadashankar78@gmail.com</a>
+            </article>
+            <article class="card card--glass contact__socials" data-reveal>
+              <h3 class="card__kicker">Find me online</h3>
+              <ul>
+                <li><a href="https://github.com/noupadasankar" target="_blank" rel="noopener" data-link="github" data-magnetic>GitHub <span>↗</span></a></li>
+                <li><a href="https://www.linkedin.com/in/shankar-noupada-7a5b77301" target="_blank" rel="noopener" data-link="linkedin" data-magnetic>LinkedIn <span>↗</span></a></li>
+                <li><a href="https://leetcode.com/u/noupadashankar78/" target="_blank" rel="noopener" data-link="leetcode" data-magnetic>LeetCode <span>↗</span></a></li>
+                <li><a href="#" target="_blank" rel="noopener" data-link="twitter" data-magnetic>Twitter / X <span>↗</span></a></li>
+              </ul>
+            </article>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================= -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span class="footer__logo">NS</span>
+      <p class="footer__copy">© <span id="year">2026</span> Noupada Sankar — Designed &amp; built from scratch.</p>
+      <a href="#hero" class="footer__top" aria-label="Back to top" data-magnetic>Back to top ↑</a>
+    </div>
+  </footer>
+
+  <!-- back to top floating -->
+  <button class="to-top" id="toTop" type="button" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5l7 7-1.4 1.4L13 8.8V20h-2V8.8L6.4 13.4 5 12l7-7Z"/></svg>
+  </button>
+
+  <!-- ============================================================
+       PROJECT MODAL  (case study)
+  ============================================================= -->
+  <div class="modal" id="projectModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel card--glass" role="document">
+      <button class="modal__close" type="button" aria-label="Close" data-close-modal>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></svg>
+      </button>
+      <div class="modal__media" id="modalMedia">
+        <img id="modalImg" src="" alt="" />
+        <div class="modal__viewer" id="modalViewer" aria-hidden="true" title="Drag to rotate"></div>
+      </div>
+      <div class="modal__content">
+        <h3 class="modal__title" id="modalTitle"></h3>
+        <ul class="modal__tags" id="modalTags"></ul>
+        <div class="modal__block"><h4>Challenge</h4><p id="modalChallenge"></p></div>
+        <div class="modal__block"><h4>Solution</h4><p id="modalSolution"></p></div>
+        <div class="modal__block"><h4>Result</h4><p id="modalResult"></p></div>
+        <div class="modal__actions">
+          <a class="btn btn--primary btn--sm" id="modalLive" href="#" target="_blank" rel="noopener" data-magnetic>Live demo</a>
+          <a class="btn btn--ghost btn--sm" id="modalRepo" href="#" target="_blank" rel="noopener" data-magnetic>Source</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SCRIPTS  (GSAP + ScrollTrigger + Lenis from CDN, then app)
+  ============================================================= -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script type="module" src="assets/js/main.js"></script>
+
+  <!-- ============================================================
+       SCROLL-DRIVEN HERO VIDEO
+       Scrolling down plays the clip forward, scrolling up rewinds it.
+       The video never autoplays — its currentTime is mapped to scroll.
+  ============================================================= -->
+  <script>
+    (function () {
+      const video = document.getElementById('heroVideo');
+      const hero  = document.getElementById('hero');
+      if (!video || !hero) return;
+
+      /* Never autoplay — we control currentTime manually. */
+      video.pause();
+      video.removeAttribute('autoplay');
+
+      let duration = 0;
+      let current  = 0;   /* eased currentTime being applied to the video */
+      let target   = 0;
+
+      // Cache layout dimensions to prevent layout thrashing (forced reflows) in RAF loop
+      let heroTop = 0;
+      let heroHeight = 0;
+      let windowHeight = 0;
+      let scrollable = 0;
+
+      function updateLayout() {
+        heroTop = hero.offsetTop;
+        heroHeight = hero.offsetHeight;
+        windowHeight = window.innerHeight;
+        scrollable = heroHeight - windowHeight;
+      }
+
+      window.addEventListener('resize', updateLayout);
+      window.addEventListener('load', updateLayout);
+      // Update initially and after preloader animates out
+      updateLayout();
+      setTimeout(updateLayout, 1000);
+      setTimeout(updateLayout, 3000);
+
+      // Update duration helper
+      function updateDuration() {
+        duration = video.duration || 0;
+      }
+      video.addEventListener('loadedmetadata', updateDuration);
+      if (video.readyState >= 1) {
+        updateDuration();
+      }
+
+
+
+      /* ── Core: runs every animation frame, no scroll events needed ──
+         Works with Lenis, GSAP ScrollTrigger, native scroll — anything.  */
+      function loop() {
+        requestAnimationFrame(loop);
+
+        if (!duration || video.readyState < 1) return;
+
+        /* Use Lenis scroll position if available, fallback to window.scrollY */
+        const lenis = window.__lenisInstance;
+        const scrollY = lenis ? lenis.scroll : window.scrollY;
+
+        const progress = scrollable > 0
+          ? Math.min(1, Math.max(0, (scrollY - heroTop) / scrollable))
+          : 0;
+
+        target = progress * duration;
+
+        /* Smooth ease toward target so scrubbing feels cinematic. */
+        current += (target - current) * 0.12;
+        if (Math.abs(target - current) < 0.002) current = target;
+
+        const timeDiff = Math.abs(video.currentTime - current);
+
+        // Only seek if:
+        // 1. The video is not currently seeking (prevents browser crash/stutter from overloaded decode queue)
+        // 2. Either the target change is larger than ~1 frame (0.03s) to prevent tiny seeks from lagging the UI,
+        //    or we have reached the final resting target and want to snap to it perfectly (timeDiff > 0.005)
+        if (!video.seeking) {
+          if (timeDiff > 0.03 || (current === target && timeDiff > 0.005)) {
+            try {
+              video.currentTime = current;
+            } catch (_) {}
+          }
+        }
+      }
+
+      /* Set initial frame when metadata or state is ready. */
+      function setInitialFrame() {
+        if (!duration) return;
+        const progress = scrollable > 0
+          ? Math.min(1, Math.max(0, ((window.__lenisInstance ? window.__lenisInstance.scroll : window.scrollY) - heroTop) / scrollable))
+          : 0;
+        current = progress * duration;
+        try { video.currentTime = current; } catch (_) {}
+      }
+      video.addEventListener('loadedmetadata', setInitialFrame);
+      if (video.readyState >= 1) {
+        setInitialFrame();
+      }
+
+      /* Kick off the RAF loop immediately. */
+      loop();
+    })();
+  </script>
+  <!-- Fixed chapter progress indicator -->
+  <nav class="hero-dots" id="heroDots" aria-label="Hero chapters">
+    <button class="hero-dot is-active" data-dot="0" aria-label="Chapter 1: Intro"></button>
+    <button class="hero-dot" data-dot="1" aria-label="Chapter 2: Tech Stack"></button>
+    <button class="hero-dot" data-dot="2" aria-label="Chapter 3: Real Impact"></button>
+    <button class="hero-dot" data-dot="3" aria-label="Chapter 4: Let's Collaborate"></button>
+  </nav>
+</body>
+</html>
