@@ -97,12 +97,12 @@
     .hero__video{
       width:100%; height:100%;
       object-fit:cover;
-      /* Shifted right so Gemini watermark stays cropped out of frame          */
-      object-position:69% 68%;
+      /* Shifted slightly left so Gemini watermark stays cropped out          */
+      object-position:30% 50%;
       display:block;
       background:transparent;
-      transform:scale(1.10);
-      transform-origin:69% 45%;   /* scale expands downward — no top gap      */
+      transform:scale(1.13);
+      transform-origin:30% 50%;
     }
     /* Side gradient scrim — left/right text stays readable, no hard edges. */
     .hero__side-scrim{
@@ -131,6 +131,18 @@
       .hero__col--right{ position:static; max-width:100%; justify-items:center; text-align:center; align-content:center; bottom:auto; right:auto; }
       .hero__col--right .hero__social{ justify-content:center; }
       .hero__videoframe{ width:100%; }
+      .hero__video{
+        object-position:50% 30%;
+        transform:scale(1.15);
+        transform-origin:50% 30%;
+      }
+    }
+    @media (max-width:480px){
+      .hero__video{
+        object-position:50% 25%;
+        transform:scale(1.10);
+        transform-origin:50% 25%;
+      }
     }
   </style>
 </head>
@@ -734,23 +746,54 @@
   ============================================================= -->
   <script>
     (function () {
-      const video = document.getElementById('heroVideo');
-      const hero  = document.getElementById('hero');
+      var video = document.getElementById('heroVideo');
+      var hero  = document.getElementById('hero');
       if (!video || !hero) return;
 
-      /* Never autoplay — we control currentTime manually. */
+      var isMobile = matchMedia('(max-width: 780px)').matches;
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      /* On iOS/mobile: auto-play the video muted when in view, pause when out.
+         Scrubbing currentTime is unreliable there, so we use play/pause instead. */
+      if (isMobile || isIOS) {
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.removeAttribute('autoplay');
+
+        var setMobileFrame = function () {
+          if (!video.readyState) return;
+          try { video.currentTime = 0.05; } catch (_) {}
+        };
+        video.addEventListener('loadedmetadata', setMobileFrame);
+        if (video.readyState >= 1) setMobileFrame();
+
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              video.play()['catch'](function () {});
+            } else {
+              video.pause();
+            }
+          });
+        }, { threshold: 0.15 });
+        io.observe(video);
+        return;
+      }
+
+      /* Never autoplay on desktop — we control currentTime manually. */
       video.pause();
       video.removeAttribute('autoplay');
 
-      let duration = 0;
-      let current  = 0;   /* eased currentTime being applied to the video */
-      let target   = 0;
+      var duration = 0;
+      var current  = 0;
+      var target   = 0;
 
-      // Cache layout dimensions to prevent layout thrashing (forced reflows) in RAF loop
-      let heroTop = 0;
-      let heroHeight = 0;
-      let windowHeight = 0;
-      let scrollable = 0;
+      var heroTop = 0;
+      var heroHeight = 0;
+      var windowHeight = 0;
+      var scrollable = 0;
 
       function updateLayout() {
         heroTop = hero.offsetTop;
@@ -761,49 +804,34 @@
 
       window.addEventListener('resize', updateLayout);
       window.addEventListener('load', updateLayout);
-      // Update initially and after preloader animates out
       updateLayout();
       setTimeout(updateLayout, 1000);
       setTimeout(updateLayout, 3000);
 
-      // Update duration helper
       function updateDuration() {
         duration = video.duration || 0;
       }
       video.addEventListener('loadedmetadata', updateDuration);
-      if (video.readyState >= 1) {
-        updateDuration();
-      }
+      if (video.readyState >= 1) updateDuration();
 
-
-
-      /* ── Core: runs every animation frame, no scroll events needed ──
-         Works with Lenis, GSAP ScrollTrigger, native scroll — anything.  */
       function loop() {
         requestAnimationFrame(loop);
-
         if (!duration || video.readyState < 1) return;
 
-        /* Use Lenis scroll position if available, fallback to window.scrollY */
-        const lenis = window.__lenisInstance;
-        const scrollY = lenis ? lenis.scroll : window.scrollY;
+        var lenis = window.__lenisInstance;
+        var scrollY = lenis ? lenis.scroll : window.scrollY;
 
-        const progress = scrollable > 0
+        var progress = scrollable > 0
           ? Math.min(1, Math.max(0, (scrollY - heroTop) / scrollable))
           : 0;
 
         target = progress * duration;
 
-        /* Smooth ease toward target so scrubbing feels cinematic. */
         current += (target - current) * 0.12;
         if (Math.abs(target - current) < 0.002) current = target;
 
-        const timeDiff = Math.abs(video.currentTime - current);
+        var timeDiff = Math.abs(video.currentTime - current);
 
-        // Only seek if:
-        // 1. The video is not currently seeking (prevents browser crash/stutter from overloaded decode queue)
-        // 2. Either the target change is larger than ~1 frame (0.03s) to prevent tiny seeks from lagging the UI,
-        //    or we have reached the final resting target and want to snap to it perfectly (timeDiff > 0.005)
         if (!video.seeking) {
           if (timeDiff > 0.03 || (current === target && timeDiff > 0.005)) {
             try {
@@ -813,21 +841,17 @@
         }
       }
 
-      /* Set initial frame when metadata or state is ready. */
       function setInitialFrame() {
         if (!duration) return;
-        const progress = scrollable > 0
+        var progress = scrollable > 0
           ? Math.min(1, Math.max(0, ((window.__lenisInstance ? window.__lenisInstance.scroll : window.scrollY) - heroTop) / scrollable))
           : 0;
         current = progress * duration;
         try { video.currentTime = current; } catch (_) {}
       }
       video.addEventListener('loadedmetadata', setInitialFrame);
-      if (video.readyState >= 1) {
-        setInitialFrame();
-      }
+      if (video.readyState >= 1) setInitialFrame();
 
-      /* Kick off the RAF loop immediately. */
       loop();
     })();
   </script>
